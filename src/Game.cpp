@@ -299,6 +299,7 @@ void Game::swapJewels()
         selectedX = x;
         selectedY = y;
         selected = true;
+        jewel.engine.selectSFX.playSFX();
     }
     else {
         if(swapCheck()) {
@@ -320,6 +321,7 @@ void Game::swapJewels()
             selectedY = y;
             selected = true;
             pressed = true;
+            jewel.engine.selectSFX.playSFX();
             return;
         }
         selected = false;

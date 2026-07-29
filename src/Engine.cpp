@@ -140,7 +140,8 @@ bool Engine::initSound()
 {
     if( !music.loadMusic("assets/music.ogg") || !matchSFX[0].loadSFX("assets/match1.ogg") ||
         !matchSFX[1].loadSFX("assets/match2.ogg") || !matchSFX[2].loadSFX("assets/match3.ogg") ||
-        !startSFX.loadSFX("assets/gamestart.ogg") || !endSFX.loadSFX("assets/gameover.ogg"))
+        !startSFX.loadSFX("assets/gamestart.ogg") || !endSFX.loadSFX("assets/gameover.ogg") ||
+        !selectSFX.loadSFX("assets/select.ogg"))
     return false;
 
     else return true;
