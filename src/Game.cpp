@@ -183,6 +183,11 @@ void Game::run()
                         if(SDL_PointInRect(&mousePos, &jewel.square[x_][y_])) {
                             x = x_;
                             y = y_;
+                            /* Hier und nicht in swapJewels: bei gesetztem drag waehlt
+                               mouseControl direkt aus und laeuft an swapJewels vorbei,
+                               der Klang waere dann nur beim allerersten Mal gekommen.
+                               Diese Stelle trifft jeden Klick des Spielers auf ein Feld. */
+                            if(e.type == SDL_MOUSEBUTTONDOWN) jewel.engine.selectSFX.playSFX();
                             mouseControl();
                             jewel.renderSelector(selectedX, selectedY, x, y);
                             jewel.updateGame();
@@ -299,7 +304,6 @@ void Game::swapJewels()
         selectedX = x;
         selectedY = y;
         selected = true;
-        jewel.engine.selectSFX.playSFX();
     }
     else {
         if(swapCheck()) {
@@ -321,7 +325,6 @@ void Game::swapJewels()
             selectedY = y;
             selected = true;
             pressed = true;
-            jewel.engine.selectSFX.playSFX();
             return;
         }
         selected = false;
