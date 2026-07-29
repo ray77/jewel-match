@@ -26,8 +26,13 @@ class Game
         
         //Mouse handle
         void mouseControl();
-        bool click; //Check is mouse was clicked
-        bool drag; //Check if mouse is dragging
+        bool click; //Maustaste ist unten
+        int downX, downY; //Feld, auf dem sie heruntergedrueckt wurde
+
+        //Orthogonale Nachbarn?
+        bool adjacent(int ax, int ay, int bx, int by);
+        //Tauschen; ohne Treffer wird zurueckgetauscht
+        void trySwap(int ax, int ay, int bx, int by);
 
         //Check if jewels can be swapped
         bool swapCheck();

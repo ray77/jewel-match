@@ -268,36 +268,60 @@ void Game::keyControl()
     }
 }
 
+/* Neu aufgebaut. Der alte Automat verwaltete click/drag ueber drei Ereignisse
+   hinweg und liess dabei click nach jedem Zieh-Loslassen stehen: die naechste
+   Bewegung setzte drag erneut, und der naechste Druck WAEHLTE statt zu
+   tauschen. Dazu warf das Loslassen ueber dem Ausgangsfeld die Auswahl weg.
+   Jetzt gilt ein Prinzip: das Druecken merkt sich sein Feld, das Loslassen
+   entscheidet - gleiches Feld ist ein Klick, Nachbarfeld ist ein Zug. */
 void Game::mouseControl()
 {
     switch(e.type) {
         case SDL_MOUSEMOTION:
-            if(selected) {
-                if(!swapCheck())
-                    pressed = false;
-                if(click)
-                    drag = true;
-                else drag = false;
-            }
+            pressed = true;   //Cursor auf dem Feld unter der Maus zeigen
             break;
 
         case SDL_MOUSEBUTTONDOWN:
             click = true;
-            if(drag) {
-                selectedX = x;
-                selectedY = y;
-                selected = true;
-            }
-            else swapJewels();
+            downX = x;
+            downY = y;
+            pressed = true;
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if(drag) {
-                swapJewels();
+            if(!click) break;
+            click = false;
+            if(x == downX && y == downY) {
+                swapJewels();                       //Klick: waehlen/tauschen/abwaehlen
             }
-            else click = false;
-            drag = false;
+            else if(adjacent(downX, downY, x, y)) {
+                trySwap(downX, downY, x, y);        //Zug: unabhaengig von der Auswahl
+                selected = false;
+                pressed = false;
+            }
+            else {
+                selectedX = downX;                  //zu weit gezogen: Ausgangsfeld waehlen
+                selectedY = downY;
+                selected = true;
+            }
             break;
+    }
+}
+
+bool Game::adjacent(int ax, int ay, int bx, int by)
+{
+    int dx = ax - bx; if(dx < 0) dx = -dx;
+    int dy = ay - by; if(dy < 0) dy = -dy;
+    return dx + dy == 1;
+}
+
+void Game::trySwap(int ax, int ay, int bx, int by)
+{
+    std::swap(jewel.board[ax][ay], jewel.board[bx][by]);
+    jewel.updateJewel();
+    if(!jewel.existMatch()) {
+        std::swap(jewel.board[ax][ay], jewel.board[bx][by]);
+        jewel.updateJewel();
     }
 }
 
@@ -307,38 +331,20 @@ void Game::swapJewels()
         selectedX = x;
         selectedY = y;
         selected = true;
+        return;
+    }
+    if(x == selectedX && y == selectedY) {
+        selected = false;                   //zweiter Druck auf denselben Stein
+        return;
+    }
+    if(swapCheck()) {
+        trySwap(selectedX, selectedY, x, y);
+        selected = false;
+        pressed = false;
     }
     else {
-        /* Loslassen ueber dem Ausgangsfeld ist das Ende eines Klicks mit minimal
-           zitternder Hand, kein Zug: schon 1 px Bewegung setzt drag, und das
-           Loslassen rief swapJewels ein zweites Mal - das Feld tauschte mit sich
-           selbst, fand keinen Treffer und warf dabei die Auswahl weg. Die
-           "manchmal" verlorene Selektion. Ein bewusster zweiter Druck auf das
-           Feld waehlt weiterhin ab. */
-        if(x == selectedX && y == selectedY && e.type == SDL_MOUSEBUTTONUP)
-            return;
-        if(swapCheck()) {
-            std::swap(jewel.board[selectedX][selectedY], jewel.board[x][y]);
-            jewel.updateJewel();
-            if(!jewel.existMatch()) {
-                std::swap(jewel.board[selectedX][selectedY], jewel.board[x][y]);
-                jewel.updateJewel();
-            }
-            pressed = false;
-        }
-        else {
-            /* Daneben geklickt. Bisher sprang der Cursor auf die alte Auswahl
-               zurueck und selected wurde geloescht - der Klick war damit
-               verloren und man musste denselben Stein noch einmal anklicken.
-               Jetzt gilt der angeklickte Stein als neue Auswahl: jeder Klick
-               tut etwas, entweder tauschen oder waehlen. */
-            selectedX = x;
-            selectedY = y;
-            selected = true;
-            pressed = true;
-            return;
-        }
-        selected = false;
+        selectedX = x;                      //nicht benachbart: umwaehlen
+        selectedY = y;
     }
 }
 
