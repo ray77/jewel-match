@@ -290,6 +290,11 @@ void Game::mouseControl()
 
 void Game::swapJewels()
 {
+    /* Jeder Klick ist Aktivitaet: die Leerlaufzeit beginnt von vorn, damit der
+       Hinweis nicht mitten im Spielen auftaucht. */
+    jewel.hint.start();
+    jewel.needHint = false;
+
     if(!selected) {
         selectedX = x;
         selectedY = y;

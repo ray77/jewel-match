@@ -134,7 +134,11 @@ void Jewel::displayHint()
     if(!hint.countdown(7000)) {
         needHint = true;
     }
-    if(needHint) {
+    /* Nicht waehrend einer laufenden Auswahl: Hinweis und Markierung sehen
+       gleich aus, und drei weisse Kaesten gleichzeitig verwirren mehr, als der
+       Hinweis hilft. Er ist fuer jemanden gedacht, der feststeckt - nicht fuer
+       jemanden mitten im Zug. */
+    if(needHint && !selected) {
         engine.hintTexture.renderTexture(&square[hintX][hintY]);
         engine.hintTexture.renderTexture(&square[hintX_][hintY_]);
     }
