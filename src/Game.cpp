@@ -309,6 +309,14 @@ void Game::swapJewels()
         selected = true;
     }
     else {
+        /* Loslassen ueber dem Ausgangsfeld ist das Ende eines Klicks mit minimal
+           zitternder Hand, kein Zug: schon 1 px Bewegung setzt drag, und das
+           Loslassen rief swapJewels ein zweites Mal - das Feld tauschte mit sich
+           selbst, fand keinen Treffer und warf dabei die Auswahl weg. Die
+           "manchmal" verlorene Selektion. Ein bewusster zweiter Druck auf das
+           Feld waehlt weiterhin ab. */
+        if(x == selectedX && y == selectedY && e.type == SDL_MOUSEBUTTONUP)
+            return;
         if(swapCheck()) {
             std::swap(jewel.board[selectedX][selectedY], jewel.board[x][y]);
             jewel.updateJewel();
