@@ -21,8 +21,9 @@ class Text
     public:
         Text();
 
-        //Open font
-		bool openFont(int size);
+        /* Open font. The segment face is the seven-segment one, for the score and
+		   the clock; it cannot draw a W or an M, so words go in the plain face. */
+		bool openFont(int size, bool segment = false);
 		
 		//Creates image from font string
 		bool loadText(const std::string &text);

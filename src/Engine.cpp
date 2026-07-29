@@ -123,8 +123,8 @@ bool Engine::initFont()
 {
     //Open font
     if( !continueText.openFont(30) || !newGameText.openFont(30) || !gameModeText.openFont(25) || !timeModeText.openFont(20) || 
-        !scoreText.openFont(30) || !highscoreText.openFont(30) || !timeText.openFont(30) || !scores.openFont(35) || 
-        !highscores.openFont(35) || !times.openFont(75) || !startNotice.openFont(100))
+        !scoreText.openFont(22) || !highscoreText.openFont(22) || !timeText.openFont(22) || !scores.openFont(30, true) || 
+        !highscores.openFont(30, true) || !times.openFont(50, true) || !startNotice.openFont(100))
     return false;
 
     //Load static text

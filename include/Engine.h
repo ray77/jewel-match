@@ -10,13 +10,18 @@ using std::vector;
 //Jewels in squares
 enum Jewels {Destroyed, Red, Green, Blue, Orange, Yellow, Purple, White, Total};
 
+/* One game mode and one round length, on purpose. Three durations reporting
+   into a single leaderboard would rank whoever picked the longest clock, and
+   Zen and Endless have no clock at all, so a score there measures patience.
+   Kept as enums rather than deleted so the surrounding cycling code stays
+   valid - it simply has nowhere to cycle to now. */
 //Game modes
-enum GameModes {Time, Zen, Endless, Total_Mode};
+enum GameModes {Time, Total_Mode};
 //Time modes
-enum TimeModes {OneMinute, TwoMinutes, FiveMinutes, Total_Time};
+enum TimeModes {FourMinutes, Total_Time};
 
 //Change selection
-enum SelectionChange {ContinueSelection, NewGameSelection, GameSelection, TimeSelection, Total_Selection};
+enum SelectionChange {ContinueSelection, NewGameSelection, Total_Selection};
 
 class Engine
 {

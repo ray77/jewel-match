@@ -101,18 +101,9 @@ void GameBoard::renderStart()
     }
     engine.newGameText.renderText(-1, -1, &newGameSelect);
 
-    if(selectChange != ContinueSelection) {
-        engine.gameModeText.loadText("<" + game_mode[gameMode] + " mode>");
-        engine.gameModeText.renderText(-1, -1, &modeSelect);
-
-        if(gameMode == Time) {
-            time = time_mode[timeMode];
-            if(time <= 120 || time % 60 != 0)
-                engine.timeModeText.loadText(std::to_string(time) + " seconds");
-            else engine.timeModeText.loadText(std::to_string(time / 60) + " minutes");
-            engine.timeModeText.renderText(-1, -1, &timeSelect);
-        }
-    }
+    /* No mode or duration to pick any more - there is only the one. The
+       assignment stays: it is what arms the clock for the coming round. */
+    time = time_mode[timeMode];
 
     switch(selectChange) {
         case ContinueSelection:
@@ -123,13 +114,6 @@ void GameBoard::renderStart()
             renderHighlight(newGameSelect);
             break;
 
-        case GameSelection:
-            renderHighlight(modeSelect);
-            break;
-
-        case TimeSelection:
-            renderHighlight(timeSelect);
-            break;
     }
     engine.render();
 }
@@ -156,17 +140,17 @@ void GameBoard::renderBoard()
 void GameBoard::renderScore()
 {
     engine.scoreTexture.renderTexture(&scoreBoard);
-    engine.scoreText.renderText(70, 170);
+    engine.scoreText.renderText(-1, 170, &scoreBoard);
     engine.scores.loadText(std::to_string(score));
-    engine.scores.renderText(25, -1, &scoreBoard);
+    engine.scores.renderText(-1, -1, &scoreBoard);
 }
 
 void GameBoard::renderHighScore()
 {
     engine.scoreTexture.renderTexture(&highscoreBoard);
-    engine.highscoreText.renderText(50, 70);
+    engine.highscoreText.renderText(-1, 70, &highscoreBoard);
     engine.highscores.loadText(std::to_string(*highscore));
-    engine.highscores.renderText(25, -1, &highscoreBoard);
+    engine.highscores.renderText(-1, -1, &highscoreBoard);
 }
 
 void GameBoard::renderTimer()
@@ -189,7 +173,7 @@ void GameBoard::renderTimer()
     }
 
     engine.timerTexture.renderTexture(&timeBoard);
-    engine.timeText.renderText(85, 370);
+    engine.timeText.renderText(-1, 370, &timeBoard);
     engine.times.loadText(minutes + ":" + seconds);
     engine.times.renderText(-1, -1, &timeBoard);
 }

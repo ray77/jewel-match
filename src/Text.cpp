@@ -10,14 +10,15 @@ Text::Text()
 	height = 0;
 }
 
-bool Text::openFont(int size)
+bool Text::openFont(int size, bool segment)
 {
 	if(font != NULL) {
 		TTF_CloseFont(font);
 	}
 
 	TTF_Font* newFont = NULL;
-	newFont = TTF_OpenFont("assets/Digital7.ttf", size);
+	newFont = TTF_OpenFont(segment ? "assets/DSEG7Classic-Bold.ttf"
+                               : "assets/JetBrainsMono-Regular.ttf", size);
 	if(newFont == NULL) {
 		LogTTF("TTF_OpenFont");
 	}

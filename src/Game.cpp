@@ -1,5 +1,32 @@
 #include "Game.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+/*
+ * Hand the final score to the page, once a run has really ended.
+ *
+ * A run left through EXIT is not reported - that one saves its state to be
+ * continued, so it is not over. The mode check stays as a guard even though
+ * there is only one mode left to be in.
+ *
+ * The page decides what to do with it. A leaderboard host defines
+ * window.onJewelGameOver; a plain build has nobody listening.
+ */
+static void reportScore(int score)
+{
+    if(gameMode != Time)
+        return;
+    EM_ASM({
+        if (typeof window.onJewelGameOver === 'function') {
+            try { window.onJewelGameOver($0); } catch (e) {}
+        }
+    }, score);
+}
+#else
+static void reportScore(int) {}
+#endif
+
 Game::Game(const int &nRows, const int &nCols) : jewel(nRows, nCols), nRows(nRows), nCols(nCols)
 {
     running = true;
@@ -37,16 +64,6 @@ void Game::startGame()
                         break;
                     }
                 }
-                else if(SDL_PointInRect(&mousePos, &jewel.modeSelect)) {
-                    selectChange = GameSelection;
-                    if(e.type == SDL_MOUSEBUTTONDOWN)
-                        gameMode = (gameMode + 1) % Total_Mode;
-                }
-                else if(gameMode == Time && SDL_PointInRect(&mousePos, &jewel.timeSelect)) {
-                    selectChange = TimeSelection;
-                    if(e.type == SDL_MOUSEBUTTONDOWN)
-                        timeMode = (timeMode + 1) % Total_Time;
-                }
             }
             else if(e.type == SDL_KEYDOWN) {
                 switch(e.key.keysym.sym) {
@@ -58,19 +75,6 @@ void Game::startGame()
                         selectChange = (Total_Selection + (selectChange - 1)) % Total_Selection;
                         break;
 
-                    case SDLK_RIGHT: case SDLK_d:
-                        if(selectChange == GameSelection)
-                            gameMode = (gameMode + 1) % Total_Mode;
-                        else if(selectChange == TimeSelection) 
-                            timeMode = (timeMode + 1) % Total_Time;
-                        break;
-                    
-                    case SDLK_LEFT: case SDLK_a:
-                        if(selectChange == GameSelection)
-                            gameMode = (Total_Mode + (gameMode - 1)) % Total_Mode;
-                        else if(selectChange == TimeSelection)
-                            timeMode = (Total_Time + (timeMode - 1)) % Total_Time;
-                        break;
  
                     case SDLK_RETURN:
                         start();
@@ -89,8 +93,12 @@ void Game::endGame()
         return;
     }
     else {
+        /* Read before rendering: renderEnd draws the final score and then clears
+         * it, ready for the next run. Taken afterwards it is always zero. */
+        const int finalScore = jewel.score;
         jewel.renderEnd();
         jewel.engine.endSFX.playSFX();
+        reportScore(finalScore);
     }
     while(SDL_WaitEvent(&e)) {
         if(e.type == SDL_QUIT) {
@@ -120,7 +128,12 @@ void Game::start()
     jewel.engine.startSFX.playSFX();
     jewel.startNotice();
     jewel.engine.music.playMusic();
-    timerID = SDL_AddTimer(1000, callback, NULL);
+    /* Der Zeitgeber ist kein Uhrwerk - die Runde laeuft ueber SDL_GetTicks -,
+       sondern der einzige Impuls, der die Schleife ohne Eingabe weiterdreht.
+       Bei 1000 ms stand zwischen zwei Ereignissen bis zu eine Sekunde still:
+       Animationen ruckelten und Klicks kamen traege an, weil SDL_WaitEvent
+       so lange blockiert. 16 ms ergeben rund 60 Durchlaeufe je Sekunde. */
+    timerID = SDL_AddTimer(16, callback, NULL);
     jewel.randomize();
     jewel.updateJewel();
 }
@@ -143,9 +156,9 @@ void Game::run()
             endGame();
         }
         else if(!jewel.existHint()) {
-            if(gameMode == Zen)
-                gameover = true; 
-            else jewel.randomize();
+            /* No moves left: shuffle rather than end the round. The clock is
+               what ends it. */
+            jewel.randomize();
         }
         else {
             if(e.type == SDL_KEYDOWN) {
@@ -293,9 +306,16 @@ void Game::swapJewels()
             pressed = false;
         }
         else {
-            x = selectedX;
-            y = selectedY;
+            /* Daneben geklickt. Bisher sprang der Cursor auf die alte Auswahl
+               zurueck und selected wurde geloescht - der Klick war damit
+               verloren und man musste denselben Stein noch einmal anklicken.
+               Jetzt gilt der angeklickte Stein als neue Auswahl: jeder Klick
+               tut etwas, entweder tauschen oder waehlen. */
+            selectedX = x;
+            selectedY = y;
+            selected = true;
             pressed = true;
+            return;
         }
         selected = false;
     }

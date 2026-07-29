@@ -1,4 +1,3 @@
-/build
-.*
-*.bin
-!.gitignore
+out/
+*.o
+.DS_Store
