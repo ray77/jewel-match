@@ -187,7 +187,15 @@ void Game::run()
                                mouseControl direkt aus und laeuft an swapJewels vorbei,
                                der Klang waere dann nur beim allerersten Mal gekommen.
                                Diese Stelle trifft jeden Klick des Spielers auf ein Feld. */
-                            if(e.type == SDL_MOUSEBUTTONDOWN) jewel.engine.selectSFX.playSFX();
+                            if(e.type == SDL_MOUSEBUTTONDOWN) {
+                                jewel.engine.selectSFX.playSFX();
+                                /* Jeder Klick ist Aktivitaet: Leerlaufzeit von vorn.
+                                   Hier und nicht in swapJewels - der drag-Weg laeuft
+                                   dort vorbei, und genau deshalb stoerte der Vorschlag
+                                   mitten in der Zugfolge. */
+                                jewel.hint.start();
+                                jewel.needHint = false;
+                            }
                             mouseControl();
                             jewel.renderSelector(selectedX, selectedY, x, y);
                             jewel.updateGame();
@@ -295,11 +303,6 @@ void Game::mouseControl()
 
 void Game::swapJewels()
 {
-    /* Jeder Klick ist Aktivitaet: die Leerlaufzeit beginnt von vorn, damit der
-       Hinweis nicht mitten im Spielen auftaucht. */
-    jewel.hint.start();
-    jewel.needHint = false;
-
     if(!selected) {
         selectedX = x;
         selectedY = y;

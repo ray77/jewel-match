@@ -132,6 +132,9 @@ bool Jewel::existHint()
 void Jewel::displayHint()
 {
     if(!hint.countdown(7000)) {
+        /* Einmal an der Flanke, nicht 60-mal je Sekunde - und nur, wenn der
+           Vorschlag auch sichtbar wird (bei laufender Auswahl bleibt er weg). */
+        if(!needHint && !selected) engine.hintSFX.playSFX();
         needHint = true;
     }
     /* Nicht waehrend einer laufenden Auswahl: Hinweis und Markierung sehen

@@ -97,6 +97,7 @@ class Engine
         Sound endSFX;
         Sound matchSFX[3];
         Sound selectSFX;   //Klick beim Auswaehlen eines Steins
+        Sound hintSFX;     //Ton, wenn der Vorschlag erscheint
 
         //Generate random number
         int getRandom();
